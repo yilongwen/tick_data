@@ -3,7 +3,14 @@ import ccxt
 import pandas as pd
 
 def fetch_ticks(symbol: str, from_id: int, limit: int, exchange) -> pd.DataFrame:
-
+    """
+    Download aggregated trades for a pair (e.g. 'SUSHI/USDT') on exchange Binance, using ccxt. https://github.com/ccxt/ccxt/wiki/Manual
+    @param symbol: string
+    @param from_id: integer
+    @param limit: integer
+    @param exchange: ccxt exchange object
+    @return pandas dataframe with columns ['id', 'timestamp', 'price', 'amount']
+    """
     trades_list = []
 
     while True:

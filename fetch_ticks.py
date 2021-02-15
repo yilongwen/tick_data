@@ -1,15 +1,22 @@
 import ccxt
 
 import pandas as pd
+# import pyarrow.parquet as pq
+
+
+# def get_last_id(symbol: str) -> int:
+#     meta_data = pq.ParquetFile(f"{symbol}.parquet.gzip")
+#     return meta_data.metadata.num_rows
+
 
 def fetch_ticks(symbol: str, from_id: int, limit: int, exchange) -> pd.DataFrame:
     """
-    Download aggregated trades for a pair (e.g. 'SUSHI/USDT') on exchange Binance, using ccxt. https://github.com/ccxt/ccxt/wiki/Manual
-    @param symbol: string
-    @param from_id: integer
-    @param limit: integer
+    Download historical tick data for a specific pair on Binance
+    @param symbol: string, e.g. 'BTC/USDT'
+    @param from_id: integer, starting point to download
+    @param limit: integer, number of ticks per request
     @param exchange: ccxt exchange object
-    @return pandas dataframe with columns ['id', 'timestamp', 'price', 'amount']
+    @return pandas dataframe with ['id', 'timestamp', 'price', 'amount']
     """
     trades_list = []
 
@@ -31,14 +38,21 @@ def main():
     exchange = ccxt.binance()
     symbol = 'SUSHI/USDT'
 
-    trades_df = fetch_ticks(
+    try:
+        trades_df = pd.read_parquet(f"{symbol.replace('/','')}.parquet.gzip")
+        from_id = len(trades_df) - 1
+    except Exception as e:
+        trades_df = pd.DataFrame()
+        from_id = 0
+
+    new_trades_df = fetch_ticks(
         symbol=symbol,
-        from_id=0,
+        from_id=from_id,
         limit=1000,
         exchange=exchange
     )
 
-    trades_df.to_parquet(f"{symbol.replace('/','')}.parquet.gzip", compression='gzip')
+    trades_df.append(new_trades_df).to_parquet(f"{symbol.replace('/','')}.parquet.gzip", compression='gzip')
 
 
 if __name__ == "__main__":

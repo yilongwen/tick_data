@@ -40,7 +40,7 @@ def main():
 
     try:
         trades_df = pd.read_parquet(f"{symbol.replace('/','')}.parquet.gzip")
-        from_id = len(trades_df) - 1
+        from_id = len(trades_df)
     except Exception as e:
         trades_df = pd.DataFrame()
         from_id = 0
